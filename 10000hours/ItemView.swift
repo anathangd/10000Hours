@@ -54,14 +54,14 @@ struct ItemView: View {
                     // Minutes today
                     let todayHours = todayMinutes / 60
                     let todayMinutes = todayMinutes % 60
-                    Text("\(todayHours > 0 ? ("\(todayHours) h ") : "")\(todayMinutes) min today\(todayMinutes > 0 || todayHours > 0 ? "!" : "")")
+                    Text(AppLocalization.itemToday(hours: todayHours, minutes: todayMinutes))
                         .padding(.vertical, 3)
                     
                     // Total progress (in hours + minutes)
                     let totalLoggedMinutes = totalMinutes + item.startTime
                     let totalHours = totalLoggedMinutes / 60
                     let totalMins = totalLoggedMinutes % 60
-                    Text("\(totalHours) h \(totalMins) min / 10000 h")
+                    Text(AppLocalization.itemTotalProgress(totalMinutes: totalLoggedMinutes))
                     
                     // Progress bar
                     HStack {

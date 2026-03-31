@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 import SwiftData
 
 @Model
@@ -21,5 +22,20 @@ class Item: Identifiable, ObservableObject {
         self.startTime = startTime
         self.todayMinutes = todayMinutes
         self.order = order
+    }
+}
+
+extension String {
+    func limited(to maxLength: Int) -> String {
+        String(prefix(maxLength))
+    }
+}
+
+extension Binding where Value == String {
+    func limited(to maxLength: Int) -> Binding<String> {
+        Binding(
+            get: { wrappedValue },
+            set: { wrappedValue = $0.limited(to: maxLength) }
+        )
     }
 }

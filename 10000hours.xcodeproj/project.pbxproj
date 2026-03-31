@@ -191,6 +191,7 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				ja,
 				Base,
 			);
 			mainGroup = 44C6FEC42E62A17F00BB8540;
@@ -399,7 +400,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "-0000hours-Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "10000 hours";
+				INFOPLIST_KEY_CFBundleDisplayName = "10000 Hours";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -430,7 +431,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "-0000hours-Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "10000 hours";
+				INFOPLIST_KEY_CFBundleDisplayName = "10000 Hours";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

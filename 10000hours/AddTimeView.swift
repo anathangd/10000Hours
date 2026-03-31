@@ -9,6 +9,7 @@ import SwiftUI
 import SwiftData
 
 struct AddTimeView: View {
+    private let maxDescriptionLength = 100
     var item: Item
     @Binding var comment: String
     @Binding var hours: Int        // <-- receive elapsed hours
@@ -66,7 +67,7 @@ struct AddTimeView: View {
                     showingPicker = false
                 }
             VStack {
-                Text("Add Time")
+                Text("add_time.title")
                     .font(.title2)
                     .padding(10)
                 VStack(alignment: .leading) {
@@ -80,7 +81,7 @@ struct AddTimeView: View {
                                     showingPicker.toggle()
                                 }
                             }) {
-                                Text("\(hours > 0 ? "\(hours) h " : "")\(minutes) min")
+                                Text(AppLocalization.duration(hours: hours, minutes: minutes))
                                     .foregroundColor(.primary)
                             }
                         }
@@ -88,18 +89,18 @@ struct AddTimeView: View {
                     
                     if showingPicker {
                         HStack {
-                            Picker("Hours", selection: $hours) {
+                            Picker("add_time.hours", selection: $hours) {
                                 ForEach(0..<24) { h in
-                                    Text("\(h) h").tag(h)
+                                    Text(AppLocalization.hourValue(h)).tag(h)
                                 }
                             }
                             .pickerStyle(WheelPickerStyle())
                             .frame(width: 100, height: 150)
                             .clipped()
 
-                            Picker("Minutes", selection: $minutes) {
+                            Picker("add_time.minutes", selection: $minutes) {
                                 ForEach(0..<60) { m in
-                                    Text("\(m) min").tag(m)
+                                    Text(AppLocalization.minuteValue(m)).tag(m)
                                 }
                             }
                             .pickerStyle(WheelPickerStyle())
@@ -110,7 +111,7 @@ struct AddTimeView: View {
                         .transition(.opacity.combined(with: .move(edge: .top)))
                     }
 
-                    TextField("Description", text: $comment)
+                    TextField("common.description_placeholder", text: $comment.limited(to: maxDescriptionLength))
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .frame(width: frameWidth - 30)
                         .padding(10)
@@ -146,18 +147,19 @@ struct AddTimeView: View {
                 
                 // save and discard buttons
                 HStack {
-                    Button("Discard", role: .destructive) {
+                    Button("common.discard", role: .destructive) {
                         showAddTimeOverlay = false
                         overlayItem = nil
                     }
                     
                     .padding(10)
-                    Button("Save") {
+                    Button("common.save") {
+                        comment = comment.limited(to: maxDescriptionLength)
                         let totalMinutes = (hours * 60) + minutes
                         let newLog = LoggedItem(
                             itemName: item.name,
                             minutes: totalMinutes,
-                            activityDescription: comment
+                            activityDescription: comment.limited(to: maxDescriptionLength)
                         )
                         modelContext.insert(newLog)
                         do {

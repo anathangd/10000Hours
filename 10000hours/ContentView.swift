@@ -30,6 +30,7 @@ struct ContentView: View {
     @State private var overlayItem: Item? = nil
 
     @State private var tick = false
+    @State private var isEditMode = false
 
     var body: some View {
         NavigationStack {
@@ -41,8 +42,14 @@ struct ContentView: View {
                 VStack {
                     HStack {
                         Spacer()
-                        Button(action: { showNewItem = true }) {
-                            Image(systemName: "plus")
+                        if !isEditMode {
+                            Button(action: { showNewItem = true }) {
+                                Image(systemName: "plus")
+                                    .font(.system(size: 24))
+                            }
+                        }
+                        Button(action: { isEditMode.toggle() }) {
+                            Image(systemName: isEditMode ? "checkmark" : "line.3.horizontal")
                                 .font(.system(size: 24))
                         }
                     }
@@ -50,79 +57,101 @@ struct ContentView: View {
                 }
                 .padding()
                 VStack {
-                    Text("10000 Hours")
+                    Text("app.title")
                         .font(.system(size: 30))
                         .fontWeight(.bold)
                     Spacer()
-                    ScrollView {
-                        ForEach(items) { item in
-                            ZStack {
+                    
+                    if isEditMode {
+                        List {
+                            ForEach(items) { item in
                                 ItemView(
                                     item: item,
                                     isActive: activeItem?.id == item.id,
-                                    onPlayStop: { selectedItem in
-                                        if activeItem == selectedItem {
-                                            // Stop the timer
-                                            timer?.invalidate()
-                                            timer = nil
-                                            // Stop the timer using start date-based logic
-                                            if let start = timerStartDate {
-                                                let elapsed = Int(Date().timeIntervalSince(start))
-                                                elapsedSeconds = elapsed
-                                            }
-                                            timerStartDate = nil
-                                            activeItem = nil
-
-                                            // Convert elapsedSeconds into hours and minutes
-                                            addTimeHours = elapsedSeconds / 3600
-                                            addTimeMinutes = (elapsedSeconds % 3600) / 60
-
-                                            elapsedSeconds = 0
-                                            overlayItem = selectedItem
-                                            showAddTimeOverlay = true
-                                        } else {
-                                            // Start the timer for the selected item
-                                            timer?.invalidate()
-                                            activeItem = selectedItem
-                                            elapsedSeconds = 0
-                                            timerStartDate = Date()
-                                            saveTimerState()
-                                            timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
-                                                elapsedSeconds += 1
-                                            }
-                                        }
-                                        // Show the add time overlay for the selected item
-                                        saveTimerState()
-                                    }
+                                    onPlayStop: { _ in }
                                 )
-                                HStack {
-                                    Spacer()
-                                    Button(role: .destructive) {
-                                        itemToDelete = item
-                                    } label: {
-                                        Label("", systemImage: "ellipsis")
-                                            .rotationEffect(.degrees(90))
-                                    }
-                                }
-                                HStack(spacing: 0) {
-                                    Rectangle()
-                                        .foregroundStyle(.clear)
-                                        .frame(width: 50)
-                                    NavigationLink(destination: LogItemListView(item: item)) {
-                                        ZStack {
-                                            Color.clear
-                                                .contentShape(Rectangle())
-                                                .frame(width: 340, height: 150)
+                                .allowsHitTesting(false)
+                                .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 8, trailing: 15))
+                                .listRowSeparator(.hidden)
+                                .listRowBackground(Color.clear)
+                            }
+                            .onMove(perform: moveItems)
+                        }
+                        .listStyle(.plain)
+                        .scrollContentBackground(.hidden)
+                        .environment(\.editMode, .constant(.active))
+                    } else {
+                        ScrollView {
+                            ForEach(items) { item in
+                                ZStack {
+                                    ItemView(
+                                        item: item,
+                                        isActive: activeItem?.id == item.id,
+                                        onPlayStop: { selectedItem in
+                                            if activeItem == selectedItem {
+                                                // Stop the timer
+                                                timer?.invalidate()
+                                                timer = nil
+                                                // Stop the timer using start date-based logic
+                                                if let start = timerStartDate {
+                                                    let elapsed = Int(Date().timeIntervalSince(start))
+                                                    elapsedSeconds = elapsed
+                                                }
+                                                timerStartDate = nil
+                                                activeItem = nil
+
+                                                // Convert elapsedSeconds into hours and minutes
+                                                addTimeHours = elapsedSeconds / 3600
+                                                addTimeMinutes = (elapsedSeconds % 3600) / 60
+
+                                                elapsedSeconds = 0
+                                                overlayItem = selectedItem
+                                                showAddTimeOverlay = true
+                                            } else {
+                                                // Start the timer for the selected item
+                                                timer?.invalidate()
+                                                activeItem = selectedItem
+                                                elapsedSeconds = 0
+                                                timerStartDate = Date()
+                                                saveTimerState()
+                                                timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
+                                                    elapsedSeconds += 1
+                                                }
+                                            }
+                                            // Show the add time overlay for the selected item
+                                            saveTimerState()
+                                        }
+                                    )
+                                    HStack {
+                                        Spacer()
+                                        Button(role: .destructive) {
+                                            itemToDelete = item
+                                        } label: {
+                                            Label("", systemImage: "ellipsis")
+                                                .rotationEffect(.degrees(90))
                                         }
                                     }
-                                    .buttonStyle(.plain)
-                                    Color.clear
+                                    HStack(spacing: 0) {
+                                        Rectangle()
+                                            .foregroundStyle(.clear)
+                                            .frame(width: 50)
+                                        NavigationLink(destination: LogItemListView(item: item)) {
+                                            ZStack {
+                                                Color.clear
+                                                    .contentShape(Rectangle())
+                                                    .frame(width: 340, height: 150)
+                                            }
+                                        }
+                                        .buttonStyle(.plain)
+                                        Color.clear
+                                    }
                                 }
                             }
+                            .onMove(perform: moveItems)
+                            .onDelete(perform: deleteItems)
                         }
-                        .onMove(perform: moveItems)
-                        .onDelete(perform: deleteItems)
                     }
+                    
                     if let _ = activeItem {
                         Text(timerString())
                             .font(.title2)
@@ -170,11 +199,11 @@ struct ContentView: View {
         .sheet(isPresented: $showNewItem) {
             NewItemView()
         }
-        .alert("Delete Item?", isPresented: Binding<Bool>(
+        .alert("content.delete_item.title", isPresented: Binding<Bool>(
             get: { itemToDelete != nil },
             set: { if !$0 { itemToDelete = nil } }
         )) {
-            Button("Delete", role: .destructive) {
+            Button("common.delete", role: .destructive) {
                 if let item = itemToDelete {
                     withAnimation {
                         let itemName = item.name
@@ -192,11 +221,11 @@ struct ContentView: View {
                     itemToDelete = nil
                 }
             }
-            Button("Cancel", role: .cancel) {
+            Button("common.cancel", role: .cancel) {
                 itemToDelete = nil
             }
         } message: {
-            Text("Are you sure you want to delete this item?")
+            Text("content.delete_item.message")
         }
     }
     
@@ -218,7 +247,7 @@ struct ContentView: View {
 
     private func addItem() {
         withAnimation {
-            let newItem = Item(name: "New Item", startTime: 0, todayMinutes: 0, order: items.count)
+            let newItem = Item(name: String(localized: "item.default_name"), startTime: 0, todayMinutes: 0, order: items.count)
             modelContext.insert(newItem)
             try? modelContext.save()
         }

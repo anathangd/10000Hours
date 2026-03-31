@@ -9,6 +9,7 @@ import SwiftUI
 import SwiftData
 
 struct NewItemView: View {
+    private let maxItemNameLength = 100
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
@@ -23,12 +24,12 @@ struct NewItemView: View {
 //                    .fontWeight(.bold)
 //                    .padding()
 
-                TextField("Enter item name", text: $itemName)
+                TextField("new_item.name_placeholder", text: $itemName.limited(to: maxItemNameLength))
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .padding()
                     .autocapitalization(.words)
                 
-                TextField("Enter starting hours", value: $startTime, format: .number)
+                TextField("new_item.starting_hours_placeholder", value: $startTime, format: .number)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .padding()
                     .keyboardType(.numberPad)
@@ -39,7 +40,7 @@ struct NewItemView: View {
                     }
 
                 Button(action: saveItem) {
-                    Text("Save")
+                    Text("common.save")
                         .frame(maxWidth: .infinity)
                         .padding()
                         .background(itemName.isEmpty ? Color.gray : Color.blue)
@@ -52,11 +53,11 @@ struct NewItemView: View {
                 Spacer()
             }
             .padding()
-            .navigationTitle("Create New Item")
+            .navigationTitle("new_item.title")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
+                    Button("common.cancel") {
                         startTime = nil
                         dismiss()
                     }
@@ -66,9 +67,12 @@ struct NewItemView: View {
     }
 
     private func saveItem() {
-        guard !itemName.isEmpty else { return }
+        let limitedItemName = itemName.limited(to: maxItemNameLength)
+        itemName = limitedItemName
+
+        guard !limitedItemName.isEmpty else { return }
         
-        let newItem = Item(name: itemName, startTime: (startTime ?? 0) * 60) // convert to minutes
+        let newItem = Item(name: limitedItemName, startTime: (startTime ?? 0) * 60) // convert to minutes
         modelContext.insert(newItem)
         do {
             try modelContext.save()  // 💾 Ensure it saves

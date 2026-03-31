@@ -18,7 +18,7 @@ struct LogItemView: View {
                 .frame(height: 100)
             HStack {
                 VStack(alignment: .leading, spacing: 5){
-                    Text("+ \(loggedItem.minutes) minutes")
+                    Text(AppLocalization.logAdded(minutes: loggedItem.minutes))
                     Text(loggedItem.itemName)
                     Text(loggedItem.date.formatted(date: .long, time: .shortened))
                         .font(.subheadline)
